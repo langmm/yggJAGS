@@ -1,0 +1,11 @@
+name: jags
+channels:
+  - conda-forge
+dependencies:
+  - r-rjags
+  - jags
+  - make
+  - autoconf
+  - automake
+  - python
+  - gnuconfig
