@@ -1,33 +1,18 @@
 #ifndef MODULE_YGGDRASIL_H_
 #define MODULE_YGGDRASIL_H_
 
-#include <function/ScalarFunction.h>
 #include <module/Module.h>
-#include <YggInterface.hpp>
+#include <functions/YggScalar.h>
 
 
 namespace jags {
 namespace ygg {
 
   /**
-   * @short Call to model that results in a scalar.
-   * The YggScalarModel function implements 
-   */
-  class YggScalarModel : public ScalarFunction
-  {
-  public:
-    YggScalarModel(std::string const &name, unsigned int npar);
-    std::string deparse(std::vector<std::string> const &par) const;
-    double evaluate(std::vector<double const *> const &args) const;
-    bool checkParameterValue(std::vector<double const *> const &args) const;
-  private:
-    yggdrasil::YggRpcClient* comm;
-  };
-
-  /**
-   * The YggModule function
+   * The YggModule
    */
   class YggModule : public Module {
+  public:
     YggModule();
     ~YggModule();
   };
@@ -35,8 +20,15 @@ namespace ygg {
   YggModule::YggModule()
     : Module("ygg")
   {
-    std::string name = 
-    insert(new YggScalarModel);
+    std::vector<std::string> scalar_models;
+    char *raw_scalar_models = std::getenv("YGG_JAGS_SCALAR_MODELS");
+    if (raw_models) {
+      scalar_models = YggInterface::utils::split(raw_scalar_models, ",");
+    }
+    for (typename std::vector<std::string>::const_iterator name = scalar_models.begin();
+         name != scalar_models.end(); name++) {
+      insert(new YggScalar(name));
+    }
   }
 
   YggModule::~YggModule() {
