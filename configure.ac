@@ -1,6 +1,6 @@
 dnl Process this file with autoconf to produce a configure script.
 
-AC_PREREQ(2.63)
+AC_PREREQ([2.71])
 
 AC_INIT([JAGS],[4.3.2],[martyn_plummer@users.sourceforge.net],[JAGS])
 
@@ -16,15 +16,15 @@ AC_DEFINE_UNQUOTED([JAGS_MINOR], [$JAGS_MINOR], [Minor version of JAGS library])
 
 AC_DEFINE_UNQUOTED([JAGS_PATCH], [$JAGS_PATCH], [Patch level of JAGS])
 
-define([hgversion],
-       esyscmd([sh -c 'hg parent --template "r{node|short} {date|shortdate}"']))
-AC_DEFINE(HG_VERSION, "hgversion", [Mercurial Version])
+dnl define([hgversion],
+dnl        esyscmd([sh -c 'hg parent --template "r{node|short} {date|shortdate}"']))
+dnl AC_DEFINE(HG_VERSION, "hgversion", [Mercurial Version])
 
-define([hgyear], esyscmd([sh -c 'hg parent --template "{date(date, \"%Y\")}"']))
-AC_DEFINE(HG_YEAR, "hgyear", [Mercurial Year])
+dnl define([hgyear], esyscmd([sh -c 'hg parent --template "{date(date, \"%Y\")}"']))
+dnl AC_DEFINE(HG_YEAR, "hgyear", [Mercurial Year])
 
-define([hgmd], esyscmd([sh -c 'hg parent --template "{date(date, \"%m%d\")}"']))
-AC_DEFINE(HG_MONTH_DAY, "hgmd", [Mercurial Month and Dday])
+dnl define([hgmd], esyscmd([sh -c 'hg parent --template "{date(date, \"%m%d\")}"']))
+dnl AC_DEFINE(HG_MONTH_DAY, "hgmd", [Mercurial Month and Dday])
 
 AC_CANONICAL_HOST
 AC_CONFIG_SRCDIR([src/lib/Console.cc])
@@ -73,7 +73,7 @@ AM_CONDITIONAL(WINDOWS, test x$win = xtrue)
 dnl fortran stuff
 AC_F77_WRAPPERS
 AC_F77_LIBRARY_LDFLAGS
-ACX_LAPACK([],[
+AX_LAPACK([],[
 	AC_MSG_ERROR("You need to install the LAPACK library")
 ])
 
@@ -148,6 +148,7 @@ AC_CONFIG_FILES([
   src/modules/glm/SSparse/CHOLMOD/Supernodal/Makefile
   src/modules/glm/samplers/Makefile
   src/modules/glm/distributions/Makefile
+  src/modules/ygg/Makefile
   src/terminal/Makefile
   win/Makefile
   win/runtime64/Makefile

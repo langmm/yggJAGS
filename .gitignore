@@ -1,4 +1,8 @@
 *~
+/config.h
+/conftest.c
+*.lo
+*.la
 
 # http://www.gnu.org/software/automake
 

@@ -2,10 +2,16 @@ name: jags
 channels:
   - conda-forge
 dependencies:
-  - r-rjags
-  - jags
-  - make
   - autoconf
   - automake
-  - python
+  - bison
+  - cppunit
   - gnuconfig
+  - jags
+  - libtool
+  - m4
+  - make
+  - pkg-config
+  - python
+  - r-base
+  - r-rjags
