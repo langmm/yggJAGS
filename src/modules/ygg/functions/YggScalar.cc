@@ -3,8 +3,9 @@
 using std::vector;
 using std::string;
 
-namespace jags {
-namespace ygg {
+using namespace jags::ygg;
+
+#ifdef HAVE_YGGINTERFACE
 
 YggScalar::YggScalar(string const &name, unsigned int npar) :
   ScalarFunction(name, npar), comm(nullptr) {
@@ -13,18 +14,18 @@ YggScalar::YggScalar(string const &name, unsigned int npar) :
     comm->addSchema("{"
                     "  \"type\": \"array\","
                     "  \"items\": {\"type\": \"number\"}"
-                    "}", false, YggInterface::SEND);
+                    "}", false, SEND);
   } else {
     comm->addSchema("{"
                     "  \"type\": \"array\","
                     "  \"items\": {\"type\": \"number\"},"
-                    "  \"minItems\": " + to_string(npar) + "," +
-                    "  \"maxItems\": " + to_string(npar) +
-                    "}", false, YggInterface::SEND);
+                    "  \"minItems\": " + std::to_string(npar) + "," +
+                    "  \"maxItems\": " + std::to_string(npar) +
+                    "}", false, SEND);
   }
   comm->addSchema("{"
                   "  \"type\": \"number\""
-                  "}", false, YggInterface::RECV);
+                  "}", false, RECV);
 }
 
 YggScalar::~YggScalar() {
@@ -56,10 +57,26 @@ double YggScalar::evaluate(vector <double const *> const &args) const {
     request.PushBack(yggdrasil_rapidjson::Value(*args[i]).Move(), request.GetAllocator());
   }
   if (comm->call(request, response) < 0) {
-    throw std::exception("Error communicating with the model");
+    throw YggInterface::YggdrasilRuntimeError("Error communicating with the model");
   }
   if (!response.IsDouble()) {
-    throw std::exception("Did not receive a scalar response");
+    throw YggInterface::YggdrasilRuntimeError("Did not receive a scalar response");
   }
   return response.GetDouble();
 }
+
+#else // HAVE_YGGINTERFACE
+
+// Stubs to allow compilation w/ error on use
+
+YggScalar::YggScalar(string const &name, unsigned int npar) :
+  ScalarFunction(name, npar) {
+  MISSING_YGGINTERFACE_ERROR
+}
+YggScalar::~YggScalar() {}
+string YggScalar::deparse(vector<string> const &) const { return ""; }
+double YggScalar::evaluate(vector <double const *> const &) const {
+  return 0; }
+
+
+#endif // HAVE_YGGINTERFACE

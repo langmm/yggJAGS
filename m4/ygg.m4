@@ -57,48 +57,32 @@ AC_DEFUN([AX_YGGINTERFACE], [
 ax_ygginterface_ok=no
 
 AC_ARG_WITH(ygginterface,
-        [AS_HELP_STRING([--with-ygginterface=<lib>], [use YGGINTERFACE library <lib>])])
-case $with_ygginterface in
-        yes | "") ;;
-        no) ax_ygginterface_ok=disable ;;
-        -* | */* | *.a | *.so | *.so.* | *.o) YGGINTERFACE_LIBS="$with_ygginterface" ;;
-        *) YGGINTERFACE_LIBS="-l$with_ygginterface" ;;
+        [AS_HELP_STRING([--with-ygginterface], [Build with support for calling models as functions via the YggInterface library])])
+AC_ARG_ENABLE(yggmodel,
+        [AS_HELP_STRING([--enable-yggmodel=<model>], [Build with support for calling <model> via the YggInterface library])])
+case $enable_yggmodel in
+        yes | "") ax_ygginterface_ok=yes ;;
+        *) YGGJAGS_MODELS=$enable_yggmodel ;;
 esac
-
-# Name of YGGINTERFACE function to check for.
-yggfunc=yggStateInterface
-
-# First, check YGGINTERFACE_LIBS environment variable
-if test "x$YGGINTERFACE_LIBS" != x; then
-        save_LIBS="$LIBS"; LIBS="$YGGINTERFACE_LIBS $LIBS"
-        AC_MSG_CHECKING([for $yggfunc in $YGGINTERFACE_LIBS])
-        AC_TRY_LINK_FUNC($yggfunc, [ax_ygginterface_ok=yes], [YGGINTERFACE_LIBS=""])
-        AC_MSG_RESULT($ax_ygginterface_ok)
-        LIBS="$save_LIBS"
-        if test $ax_ygginterface_ok = no; then
-                YGGINTERFACE_LIBS=""
-        fi
+if test "x$with_ygginterface" = "xyes"; then
+        PKG_CHECK_MODULES([YGGINTERFACE], [ygginterface >= 0.1.0],
+        [ax_ygginterface_ok=yes], [ax_ygginterface_ok=notfound])
 fi
 
-# Generic YGGINTERFACE library?
-for ygginterface in ygginterface; do
-        if test $ax_ygginterface_ok = no; then
-                save_LIBS="$LIBS"; LIBS="$LIBS"
-                AC_CHECK_LIB($ygginterface, $yggfunc,
-                    [ax_ygginterface_ok=yes; YGGINTERFACE_LIBS="-l$ygginterface"], [], [])
-                LIBS="$save_LIBS"
-        fi
-done
+if test "x$ax_ygginterface_ok" = "xnotfound"; then
+        AC_MSG_ERROR("Could not locate the YggInterface library")
+fi
 
-# TODO: Do this correctly via pkg-config
-ax_ygginterface_ok=yes
-YGGINTERFACE_LIBS="/Users/langmm/yggcpp/lib/libYggInterface.dylib"
-YGGINTERFACE_INCL="/Users/langmm/yggcpp/cpp/include"
-AC_SUBST(YGGINTERFACE_LIBS)
-AC_SUBST(YGGINTERFACE_INCL)
+if test x"$ax_ygginterface_ok" = xyes; then
+       YGGINTERFACE_CFLAGS="${YGGINTERFACE_CFLAGS} -DHAVE_YGGINTERFACE"
+       AC_SUBST(YGGINTERFACE_CFLAGS)
+fi
 
 # Finally, execute ACTION-IF-FOUND/ACTION-IF-NOT-FOUND:
 if test x"$ax_ygginterface_ok" = xyes; then
+        # AC_SUBST(YGGINTERFACE_LIBS)
+        # AC_SUBST(YGGINTERFACE_INCL)
+        # AC_SUBST(YGGINTERFACE_CFLAGS)
         ifelse([$1],,AC_DEFINE(HAVE_YGGINTERFACE,1,[Define if you have YGGINTERFACE library.]),[$1])
         :
 else

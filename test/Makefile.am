@@ -1,7 +1,7 @@
 if CANCHECK
 
 # Rules for the test code (use `make check` to execute)
-TESTS = base bugs mix glm
+TESTS = base bugs mix glm ygg
 check_PROGRAMS = $(TESTS)
 
 
@@ -47,6 +47,17 @@ glm_LDFLAGS = $(CPPUNIT_LIBS)
 glm_LDADD = $(top_builddir)/src/modules/glm/libglmtest.la
 
 glm_CPPFLAGS = -I$(top_srcdir)/src/include	\
+	-I$(top_srcdir)/src/modules
+
+## Ygg module
+
+ygg_SOURCES = ygg.cc 
+ygg_CXXFLAGS = $(CPPUNIT_CFLAGS) $(YGGINTERFACE_CFLAGS)
+ygg_LDFLAGS = $(CPPUNIT_LIBS) $(YGGINTERFACE_LIBS)
+
+ygg_LDADD = $(top_builddir)/src/modules/ygg/libyggtest.la
+
+ygg_CPPFLAGS = -I$(top_srcdir)/src/include	\
 	-I$(top_srcdir)/src/modules
 
 endif

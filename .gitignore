@@ -3,6 +3,15 @@
 /conftest.c
 *.lo
 *.la
+*.o
+/test/*.log
+/test/*.trs
+/test/*.o
+/test/base
+/test/bugs
+/test/glm
+/test/mix
+/test/ygg
 
 # http://www.gnu.org/software/automake
 

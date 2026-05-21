@@ -2,7 +2,17 @@
 #define YGG_SCALAR_H_
 
 #include <function/ScalarFunction.h>
-#include <YggInterface.hpp>
+#ifdef HAVE_YGGINTERFACE
+#include <YggInterface/YggInterface.hpp>
+
+#include <stdexcept>
+
+#define MISSING_YGGINTERFACE_ERROR
+#else
+// TODO: Use YggdrasilRuntimeError
+#define MISSING_YGGINTERFACE_ERROR \
+  throw std::runtime_error("Cannot use the ygg module as JAGS was not build against the YggInterface library");
+#endif
 
 
 namespace jags {
@@ -16,12 +26,14 @@ namespace ygg {
   class YggScalar : public ScalarFunction
   {
   public:
-    YggScalar(std::string const &name, unsigned int npar=0);
+    YggScalar(std::string const &name, unsigned int npar=1);
+    ~YggScalar();
     std::string deparse(std::vector<std::string> const &par) const;
     double evaluate(std::vector<double const *> const &args) const;
-    bool checkParameterValue(std::vector<double const *> const &args) const;
+#ifdef HAVE_YGGINTERFACE
   private:
-    yggdrasil::YggRpcClient* comm;
+    YggInterface::YggRpcClient* comm;
+#endif
   };
 
 }

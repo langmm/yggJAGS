@@ -39,11 +39,9 @@ AS_IF([test -n "$PKG_CONFIG"],[
    [cancheck=yes], [cancheck=no])
 ])   
 AM_CONDITIONAL([CANCHECK], [test x$cancheck = xyes])
-AS_IF([test -n "$PKG_CONFIG"],[
-   PKG_CHECK_MODULES([YGGINTERFACE], [ygginterface >= 0.1.0],
-   [yggfound=yes], [yggfound=no])
-])   
-AM_CONDITIONAL([YGGFOUND], [test x$yggfound = xyes])
+
+AX_YGGINTERFACE([],[])
+
 
 dnl libtool and ltdl configuration
 LT_PREREQ(2.2.6)
@@ -81,9 +79,6 @@ AC_F77_LIBRARY_LDFLAGS
 AX_LAPACK([],[
 	AC_MSG_ERROR("You need to install the LAPACK library")
 ])
-
-dnl YggInterface stuff
-AX_YGGINTERFACE([],[])
 
 jagsmoddir=${libdir}/JAGS/modules-${JAGS_MAJOR}
 AC_SUBST(jagsmoddir)
