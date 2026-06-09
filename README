@@ -5,3 +5,9 @@ The functionality of JAGS is based on the BUGS program created by the
 MRC Biostatistics Unit (http://www.mrc-bsu.cam.ac.uk). 
 
 JAGS is written in C++ and requires (since version 4.3.2) C++11 or above.
+
+
+Funding
+-------
+
+The work to add the yggdrasil module for calling models is supported by funding from the CROPPS NSF STC (Grant No. DBI-2019674).
