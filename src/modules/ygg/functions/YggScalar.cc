@@ -9,7 +9,9 @@ using namespace jags::ygg;
 
 YggScalar::YggScalar(string const &name, unsigned int npar) :
   ScalarFunction(name, npar), comm(nullptr) {
-  comm = new YggInterface::YggRpcClient(name);
+  comm = new YggInterface::YggFunction(name);
+  if (!(comm && comm->valid()))
+    throw YggInterface::YggdrasilRuntimeError("Invalid YggInterface comm \"" + name + "\"");
   if (npar == 0) {
     comm->addSchema("{"
                     "  \"type\": \"array\","
@@ -56,8 +58,11 @@ double YggScalar::evaluate(vector <double const *> const &args) const {
   for (unsigned int i = 0; i < args.size(); ++i) {
     request.PushBack(yggdrasil_rapidjson::Value(*args[i]).Move(), request.GetAllocator());
   }
-  if (comm->call(request, response) < 0) {
-    throw YggInterface::YggdrasilRuntimeError("Error communicating with the model");
+  if (comm->send(request) < 0) {
+    throw YggInterface::YggdrasilRuntimeError("Error sending request to the model");
+  }
+  if (comm->recv(response) < 0) {
+    throw YggInterface::YggdrasilRuntimeError("Error receiving response from the model");
   }
   if (!response.IsDouble()) {
     throw YggInterface::YggdrasilRuntimeError("Did not receive a scalar response");

@@ -32,7 +32,7 @@ namespace ygg {
     double evaluate(std::vector<double const *> const &args) const;
 #ifdef HAVE_YGGINTERFACE
   private:
-    YggInterface::YggRpcClient* comm;
+    YggInterface::YggFunction* comm;
 #endif
   };
 

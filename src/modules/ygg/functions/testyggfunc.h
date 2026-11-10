@@ -11,10 +11,7 @@ namespace jags {
 #include <testlib.h>
 #include <function/testfun.h>
 
-// TODO
-// #define YGGTESTMODEL_SCALAR
-// #define YGGTESTMODEL_VECTOR
-// #define YGGTESTMODEL_ARRAY
+#define YGGTESTMODEL_PYTHON(type) STRINGIFY(python::/Users/langmm/JAGS/yggJAGS/example_models.py::type)
 
 class YggFuncTest : public CppUnit::TestFixture , public JAGSFixture
 {

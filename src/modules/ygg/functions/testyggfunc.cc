@@ -12,21 +12,28 @@ using std::vector;
 using std::string;
 using std::stringstream;
 
+#ifdef YGGTESTMODEL_PYTHON
+#define YGGTESTMODEL_PYTHON_SETUP(type, cls)                            \
+  setenv(STRINGIFY(type ## _OUT), YGGTESTMODEL_PYTHON(type), 1);        \
+  setenv(STRINGIFY(type ## _OUT_COMM), YGGTESTMODEL_PYTHON(type), 1);   \
+  _ ## type = new jags::ygg::cls(#type)
+#define YGGTESTMODEL_PYTHON_TEARDOWN(type)      \
+  unsetenv(STRINGIFY(type ## _OUT));               \
+  unsetenv(STRINGIFY(type ## _OUT_COMM))
+#else
+#define YGGTESTMODEL_PYTHON_SETUP(type, cls)
+#define YGGTESTMODEL_PYTHON_TEARDOWN(type)
+#endif
+
 void YggFuncTest::setUp()
 {
 #ifdef HAVE_YGGINTERFACE
   _scalar = nullptr;
   _vector = nullptr;
   _array = nullptr;
-#ifdef YGGTESTMODEL_SCALAR
-  _scalar = new jags::ygg::YggScalar(STRINGIFY(YGGTESTMODEL_SCALAR));
-#endif
-#ifdef YGGTESTMODEL_VECTOR
-  _vector = new jags::ygg::YggVector(STRINGIFY(YGGTESTMODEL_VECTOR));
-#endif
-#ifdef YGGTESTMODEL_ARRAY
-  _array = new jags::ygg::YggArray(STRINGIFY(YGGTESTMODEL_ARRAY));
-#endif
+  YGGTESTMODEL_PYTHON_SETUP(scalar, YggScalar);
+  // YGGTESTMODEL_PYTHON_SETUP(vector, YggVector);
+  // YGGTESTMODEL_PYTHON_SETUP(array, YggArray);
 #endif // HAVE_YGGINTERFACE
 }
 
@@ -36,6 +43,9 @@ void YggFuncTest::tearDown()
   if (_scalar) delete _scalar;
   if (_vector) delete _vector;
   if (_array) delete _array;
+  YGGTESTMODEL_PYTHON_TEARDOWN(scalar);
+  // YGGTESTMODEL_PYTHON_TEARDOWN(vector);
+  // YGGTESTMODEL_PYTHON_TEARDOWN(array);
 #endif // HAVE_YGGINTERFACE
 }
 
@@ -44,6 +54,10 @@ void YggFuncTest::tearDown()
 void YggFuncTest::invalid_model()
 {
   CPPUNIT_ASSERT_THROW(jags::ygg::YggScalar("invalid"),
+                       YggInterface::YggdrasilRuntimeError);
+  CPPUNIT_ASSERT_THROW(jags::ygg::YggVector("invalid"),
+                       YggInterface::YggdrasilRuntimeError);
+  CPPUNIT_ASSERT_THROW(jags::ygg::YggArray("invalid"),
                        YggInterface::YggdrasilRuntimeError);
 }
 
@@ -107,6 +121,10 @@ void YggFuncTest::missing()
 {
   // TODO: Create specific error class
   CPPUNIT_ASSERT_THROW(jags::ygg::YggScalar("invalid"),
+                       std::exception);
+  CPPUNIT_ASSERT_THROW(jags::ygg::YggVector("invalid"),
+                       std::exception);
+  CPPUNIT_ASSERT_THROW(jags::ygg::YggArray("invalid"),
                        std::exception);
 }
 

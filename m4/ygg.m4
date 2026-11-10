@@ -61,7 +61,7 @@ AC_ARG_WITH(ygginterface,
 AC_ARG_ENABLE(yggmodel,
         [AS_HELP_STRING([--enable-yggmodel=<model>], [Build with support for calling <model> via the YggInterface library])])
 case $enable_yggmodel in
-        yes | "") ax_ygginterface_ok=yes ;;
+        yes) ax_ygginterface_ok=yes ;;
         *) YGGJAGS_MODELS=$enable_yggmodel ;;
 esac
 if test "x$with_ygginterface" = "xyes"; then

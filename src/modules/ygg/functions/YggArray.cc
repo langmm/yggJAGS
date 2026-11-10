@@ -7,6 +7,8 @@ using namespace jags::ygg;
 YggArray::YggArray(std::string const &name, unsigned int npar) :
   ArrayFunction(name, npar), comm(nullptr) {
   comm = new YggInterface::YggRpcClient(name);
+  if (!comm->valid())
+    throw YggInterface::YggdrasilRuntimeError("Invalid YggInterface comm \"" + name + "\"");
   if (npar == 0) {
     comm->addSchema("{"
                     "  \"type\": \"array\","
