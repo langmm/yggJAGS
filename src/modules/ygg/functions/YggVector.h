@@ -2,21 +2,21 @@
 #define YGG_VECTOR_H_
 
 #include <function/VectorFunction.h>
-#ifdef HAVE_YGGINTERFACE
-#include <YggInterface/YggInterface.hpp>
-
-#include <stdexcept>
-
-#define MISSING_YGGINTERFACE_ERROR
-#else
-// TODO: Use YggdrasilRuntimeError
-#define MISSING_YGGINTERFACE_ERROR \
-  throw std::runtime_error("Cannot use the ygg module as JAGS was not build against the YggInterface library");
-#endif
+#include "YggFunction.h"
 
 
 namespace jags {
 namespace ygg {
+
+#ifdef HAVE_YGGINTERFACE
+  class YggVectorLoader : public YggLoader
+  {
+  public:
+    YggVectorLoader(std::string const &name, unsigned int npar=1);
+    unsigned int length_res;
+    std::vector<unsigned int> length_par;
+  };
+#endif // HAVE_YGGINTERFACE
 
   /**
    * @short Call to model that results in a vector.
@@ -38,7 +38,10 @@ namespace ygg {
 
 #ifdef HAVE_YGGINTERFACE
   private:
-    YggInterface::YggRpcClient* comm;
+    YggInterface::communicator::Comm_t* comm;
+    unsigned int exp_length;  /*!< Expected length of returned vector. */
+  public:
+    YggVector(const YggVectorLoader& loader);
 #endif
   };
 

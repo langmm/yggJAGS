@@ -1,4 +1,5 @@
 #include <module/Module.h>
+#include <functions/YggFunction.h>
 #include <functions/YggScalar.h>
 #include <functions/YggVector.h>
 #include <functions/YggArray.h>
@@ -24,6 +25,7 @@ namespace ygg {
     : Module("ygg")
   {
 #ifdef HAVE_YGGINTERFACE
+    // TODO: Allow a directory to be specified containing model descriptions in JSON files
     std::vector<std::string> model_types = {"SCALAR", "VECTOR", "ARRAY"};
     for (typename std::vector<std::string>::const_iterator model_type = model_types.begin();
          model_type != model_types.end(); model_type++) {

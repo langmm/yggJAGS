@@ -1,0 +1,9 @@
+{
+    "jags_type": "array",
+    "address": "python::example_models.py::array",
+    "npar": 1,
+    "dim_par": [
+        [3, 3]
+    ],
+    "dim_res": [1]
+}

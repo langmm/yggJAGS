@@ -101,7 +101,7 @@ clone-ygg = {
 }
 configure-ygg = {
     description = "Configure YggInterface",
-    cmd = "cmake -S $YGG_ROOT -B build_ygginterface -G Ninja -DYGG_DEBUG_LEVEL=5",
+    cmd = "cmake -S $YGG_ROOT -B build_ygginterface -G Ninja -DYGG_DEBUG_LEVEL=20",
     depends-on = ["clone-ygg"],
 }
 build-ygg = {

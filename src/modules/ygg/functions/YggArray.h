@@ -2,21 +2,20 @@
 #define YGG_ARRAY_H_
 
 #include <function/ArrayFunction.h>
-#ifdef HAVE_YGGINTERFACE
-#include <YggInterface/YggInterface.hpp>
-
-#include <stdexcept>
-
-#define MISSING_YGGINTERFACE_ERROR
-#else
-// TODO: Use YggdrasilRuntimeError
-#define MISSING_YGGINTERFACE_ERROR \
-  throw std::runtime_error("Cannot use the ygg module as JAGS was not build against the YggInterface library");
-#endif
-
+#include "YggFunction.h"
 
 namespace jags {
 namespace ygg {
+
+#ifdef HAVE_YGGINTERFACE
+  class YggArrayLoader : public YggLoader
+  {
+  public:
+    YggArrayLoader(std::string const &name, unsigned int npar=1);
+    std::vector<unsigned int> dim_res;
+    std::vector< std::vector<unsigned int> > dim_par;
+  };
+#endif // HAVE_YGGINTERFACE
 
   /**
    * @short Call to model that results in a array.
@@ -38,7 +37,11 @@ namespace ygg {
     bool checkParameterDim(std::vector<std::vector<unsigned int> > const &dims) const;
 #ifdef HAVE_YGGINTERFACE
   private:
-    YggInterface::YggRpcClient* comm;
+    YggInterface::communicator::Comm_t* comm;
+    std::vector<unsigned int> exp_dim_res;  /*!< Expected dimensions of returned array. */
+    std::vector< std::vector<unsigned int> > exp_dim_par;  /*!< Expected dimensions of parameters */
+  public:
+    YggArray(const YggArrayLoader& loader);
 #endif
   };
 

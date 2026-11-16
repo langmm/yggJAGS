@@ -11,7 +11,8 @@ namespace jags {
 #include <testlib.h>
 #include <function/testfun.h>
 
-#define YGGTESTMODEL_PYTHON(type) STRINGIFY(python::/Users/langmm/JAGS/yggJAGS/example_models.py::type)
+#define YGGTESTMODEL_JSON(type) STRINGIFY(/Users/langmm/JAGS/yggJAGS/example_models/type.json)
+#define YGGTESTMODEL_PYTHON(type) STRINGIFY(python::/Users/langmm/JAGS/yggJAGS/example_models/example_models.py::type)
 
 class YggFuncTest : public CppUnit::TestFixture , public JAGSFixture
 {
@@ -33,6 +34,7 @@ class YggFuncTest : public CppUnit::TestFixture , public JAGSFixture
     jags::ScalarFunction *_scalar;
     jags::VectorFunction *_vector;
     jags::ArrayFunction *_array;
+    jags::ArrayFunction *_array_to_array;
 #endif
 
 public:
@@ -47,6 +49,7 @@ public:
     void scalar();
     void vector();
     void array();
+    void array_to_array();
 #else
     void missing();
 #endif

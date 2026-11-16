@@ -1,0 +1,5 @@
+{
+    "jags_type": "scalar",
+    "address": "python::example_models.py::scalar",
+    "npar": 1
+}

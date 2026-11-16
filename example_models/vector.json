@@ -1,0 +1,7 @@
+{
+    "jags_type": "vector",
+    "address": "python::example_models.py::vector",
+    "npar": 1,
+    "length_par": [3],
+    "length_res": 1
+}

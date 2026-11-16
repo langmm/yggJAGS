@@ -55,7 +55,9 @@ ygg_SOURCES = ygg.cc
 ygg_CXXFLAGS = $(CPPUNIT_CFLAGS) $(YGGINTERFACE_CFLAGS)
 ygg_LDFLAGS = $(CPPUNIT_LIBS) $(YGGINTERFACE_LIBS)
 
-ygg_LDADD = $(top_builddir)/src/modules/ygg/libyggtest.la
+ygg_LDADD = $(top_builddir)/src/modules/ygg/libyggtest.la		\
+	$(top_builddir)/src/modules/base/libbasetest.la		\
+	$(top_builddir)/src/modules/bugs/libbugstest.la
 
 ygg_CPPFLAGS = -I$(top_srcdir)/src/include	\
 	-I$(top_srcdir)/src/modules

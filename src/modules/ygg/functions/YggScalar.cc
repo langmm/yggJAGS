@@ -7,12 +7,22 @@ using namespace jags::ygg;
 
 #ifdef HAVE_YGGINTERFACE
 
-YggScalar::YggScalar(string const &name, unsigned int npar) :
-  ScalarFunction(name, npar), comm(nullptr) {
-  comm = new YggInterface::YggFunction(name);
+YggScalarLoader::YggScalarLoader(std::string const &name,
+                                 unsigned int npar0) :
+  YggLoader(name, npar0) {}
+
+YggScalar::YggScalar(const YggScalarLoader& loader) :
+  ScalarFunction(loader.name, loader.npar), comm(nullptr) {
+  if (!loader.address.empty()) {
+    comm = new YggInterface::communicator::FunctionComm(
+      loader.name, loader.address,
+      SEND, COMM_FLAG_INTERFACE);
+  } else {
+    comm = new YggInterface::YggFunction(loader.name);
+  }
   if (!(comm && comm->valid()))
-    throw YggInterface::YggdrasilRuntimeError("Invalid YggInterface comm \"" + name + "\"");
-  if (npar == 0) {
+    throw YggInterface::YggdrasilRuntimeError("Invalid YggInterface comm \"" + loader.name + "\" (address = \"" + loader.address + "\")");
+  if (loader.npar == 0) {
     comm->addSchema("{"
                     "  \"type\": \"array\","
                     "  \"items\": {\"type\": \"number\"}"
@@ -21,14 +31,17 @@ YggScalar::YggScalar(string const &name, unsigned int npar) :
     comm->addSchema("{"
                     "  \"type\": \"array\","
                     "  \"items\": {\"type\": \"number\"},"
-                    "  \"minItems\": " + std::to_string(npar) + "," +
-                    "  \"maxItems\": " + std::to_string(npar) +
+                    "  \"minItems\": " + std::to_string(loader.npar) + "," +
+                    "  \"maxItems\": " + std::to_string(loader.npar) +
                     "}", false, SEND);
   }
   comm->addSchema("{"
                   "  \"type\": \"number\""
                   "}", false, RECV);
 }
+
+YggScalar::YggScalar(string const &name, unsigned int npar) :
+  YggScalar(YggScalarLoader(name, npar)) {}
 
 YggScalar::~YggScalar() {
   if (comm) {

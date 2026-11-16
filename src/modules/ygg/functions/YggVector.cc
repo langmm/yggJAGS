@@ -4,17 +4,42 @@ using namespace jags::ygg;
 
 #ifdef HAVE_YGGINTERFACE
 
-YggVector::YggVector(std::string const &name, unsigned int npar) :
-  VectorFunction(name, npar), comm(nullptr) {
-  comm = new YggInterface::YggRpcClient(name);
-  if (!comm->valid())
-    throw YggInterface::YggdrasilRuntimeError("Invalid YggInterface comm \"" + name + "\"");
-  if (npar == 0) {
+YggVectorLoader::YggVectorLoader(std::string const &name0,
+                                 unsigned int npar0) :
+  YggLoader(name0, npar0), length_res(1), length_par() {
+  if (doc.IsObject()) {
+    if (doc.HasMember("length_res"))
+      length_res = doc["length_res"].GetUint();
+    if (doc.HasMember("length_par")) {
+      length_par = this->_value2vector(doc["length_par"]);
+      if (length_par.size() != this->npar) {
+        if (doc.HasMember("par"))
+          throw YggInterface::YggdrasilRuntimeError("Length of length_par (" + std::to_string(length_par.size()) + ") does not match provided npar (" + std::to_string(this->npar) + ")");
+        this->npar = length_par.size();
+      }
+    }
+  }
+}
+
+YggVector::YggVector(const YggVectorLoader& loader) :
+  VectorFunction(loader.name, loader.npar), comm(nullptr),
+  exp_length(loader.length_res) {
+  if (!loader.address.empty()) {
+    comm = new YggInterface::communicator::FunctionComm(
+      loader.name, loader.address,
+      SEND, COMM_FLAG_INTERFACE);
+  } else {
+    comm = new YggInterface::YggFunction(loader.name);
+  }
+  if (!(comm && comm->valid()))
+    throw YggInterface::YggdrasilRuntimeError("Invalid YggInterface comm \"" + loader.name + "\" (address = \"" + loader.address + "\")");
+  // TODO: Add expected length to the schema
+  if (loader.npar == 0) {
     comm->addSchema("{"
                     "  \"type\": \"array\","
                     "  \"items\": {"
                     "    \"type\": \"1darray\","
-                    "    \"subtype\": \"float\","
+                    "    \"subtype\": \"float\""
                     "  }"
                     "}", false, SEND);
   } else {
@@ -22,17 +47,28 @@ YggVector::YggVector(std::string const &name, unsigned int npar) :
                     "  \"type\": \"array\","
                     "  \"items\": {"
                     "    \"type\": \"1darray\","
-                    "    \"subtype\": \"float\","
+                    "    \"subtype\": \"float\""
                     "  },"
-                    "  \"minItems\": " + std::to_string(npar) + "," +
-                    "  \"maxItems\": " + std::to_string(npar) +
+                    "  \"minItems\": " + std::to_string(loader.npar) + "," +
+                    "  \"maxItems\": " + std::to_string(loader.npar) +
                     "}", false, SEND);
   }
-  comm->addSchema("{"
-                  "  \"type\": \"1darray\","
-                  "  \"subtype\": \"float\""
-                  "}", false, RECV);
+  if (exp_length == 0) {
+    comm->addSchema("{"
+                    "  \"type\": \"1darray\","
+                    "  \"subtype\": \"float\""
+                    "}", false, RECV);
+  } else {
+    comm->addSchema("{"
+                    "  \"type\": \"1darray\","
+                    "  \"subtype\": \"float\","
+                    "  \"length\": " + std::to_string(exp_length) +
+                    "}", false, RECV);
+  }
 }
+
+YggVector::YggVector(std::string const &name, unsigned int npar) :
+  YggVector(YggVectorLoader(name, npar)) {}
 
 YggVector::~YggVector() {
   if (comm) {
@@ -64,8 +100,11 @@ void YggVector::evaluate(double *value,
   for (unsigned int i = 0; i < args.size(); ++i) {
     request.PushBack(yggdrasil_rapidjson::Value(args[i], lengths[i], request.GetAllocator()).Move(), request.GetAllocator());
   }
-  if (comm->call(request, response) < 0) {
-    throw YggInterface::YggdrasilRuntimeError("Error communicating with the model");
+  if (comm->send(request) < 0) {
+    throw YggInterface::YggdrasilRuntimeError("Error sending request to the model");
+  }
+  if (comm->recv(response) < 0) {
+    throw YggInterface::YggdrasilRuntimeError("Error receiving response from the model");
   }
   if (!response.Is1DArray()) {
     throw YggInterface::YggdrasilRuntimeError("Did not receive a vector response");
@@ -74,10 +113,14 @@ void YggVector::evaluate(double *value,
 }
 
 unsigned int 
-YggVector::length(std::vector <unsigned int> const &,
+YggVector::length(std::vector <unsigned int> const &lengths,
                   std::vector <double const *> const &) const {
-  throw YggInterface::YggdrasilRuntimeError("NotImplemented");
-  return 0;
+  // Assumes that the function returns a vector of the same size
+  if (exp_length == 0) {
+    auto max_it = std::max_element(lengths.begin(), lengths.end());
+    return *max_it;
+  }
+  return exp_length;
 }
 
 #else // HAVE_YGGINTERFACE
